@@ -1,19 +1,18 @@
 import { WechatyBuilder } from "wechaty";
 import QRCode from "qrcode";
 import { ChatGPTBot } from "./bot.js";
+import {config} from "./config.js";
 const chatGPTBot = new ChatGPTBot();
 
 const bot =  WechatyBuilder.build({
   name: "wechat-assistant", // generate xxxx.memory-card.json and save login data for the next login
-  puppetOptions: {
-    uos: true, // 开启uos协议
-  },
   puppet: "wechaty-puppet-wechat",
+  puppetOptions: {
+    uos: true
+  }
 });
-// get a Wechaty instance
-
 async function main() {
-  await chatGPTBot.startGPTBot();
+  const initializedAt = Date.now()
   bot
     .on("scan", async (qrcode, status) => {
       const url = `https://wechaty.js.org/qrcode/${encodeURIComponent(qrcode)}`;
@@ -23,11 +22,14 @@ async function main() {
       );
     })
     .on("login", async (user) => {
-      console.log(`User ${user} logged in`);
       chatGPTBot.setBotName(user.name());
+      console.log(`User ${user} logged in`);
+      console.log(`私聊触发关键词: ${config.chatPrivateTriggerKeyword}`);
+      console.log(`已设置 ${config.blockWords.length} 个聊天关键词屏蔽. ${config.blockWords}`);
+      console.log(`已设置 ${config.chatgptBlockWords.length} 个ChatGPT回复关键词屏蔽. ${config.chatgptBlockWords}`);
     })
     .on("message", async (message) => {
-      if (!chatGPTBot.ready) {
+      if (message.date().getTime() < initializedAt) {
         return;
       }
       if (message.text().startsWith("/ping")) {
@@ -35,7 +37,6 @@ async function main() {
         return;
       }
       try {
-        console.log(`Message: ${message}`);
         await chatGPTBot.onMessage(message);
       } catch (e) {
         console.error(e);

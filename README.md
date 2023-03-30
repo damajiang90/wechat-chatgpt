@@ -14,182 +14,166 @@
 </p>
 
 > Use ChatGPT On Wechat via wechaty  
-English | [中文文档](README_ZH.md)
+> English | [中文文档](README_ZH.md)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/BHJD6L?referralCode=FaJtD_)  
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/dMLG70?referralCode=bIYugQ)
 
-If you don't have a server or want to experience rapid deployment, you can use Railway to do so, see [Usage with Railway](#usage-with-railway).
+## 🌟 Features
 
-### Update Decomber 27, 2022
-Using railway & docker deployment, there may be problems that cannot be solved, we are working on it.
+- Interact with WeChat and ChatGPT:
+   - Use ChatGPT on WeChat with [wechaty](https://github.com/wechaty/wechaty) and [Official API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis)
+   - Add conversation support
+   - Support command setting
 
-### Update December 20, 2022
+- Deployment and configuration options:
+   - Add Dockerfile, deployable with [docker](#use-with-docker)
+   - Support deployment using [docker compose](#use-with-docker-compose)
+   - Support [Railway](#use-with-railway) and [Fly.io](#use-with-flyio) deployment
 
-Thanks @transitive-bullshit, The ChatGPT API automates the work.  
-You should use password & username to login, and config [CAPTCHAs](#CAPTCHAS).  
-⚠️ There may be a problem with the Docker image because I don't have an X86 device and Qume doesn't work.
+- Other features:
+   - Support [Dall·E](https://labs.openai.com/)
+   - Support [whisper](https://openai.com/blog/introducing-chatgpt-and-whisper-apis)
+   - Support setting prompt
+   - Support proxy (in development)
 
-## 🌟 Feature
+## 🚀 Usage
+- [Use with Railway](#use-with-railway)(PaaS, Free, Stable, ✅Recommended)
+- [Use with Fly.io](#use-with-flyio)(Paas, Free, ✅Recommended)
+- [Use with docker](#use-with-docker)(Self-hosted, Stable, ✅Recommended)
+- [Use with docker compose](#use-with-docker-compose)(Self-hosted, Stable, ✅Recommended)
+- [Use with nodejs](#use-with-nodejs)(Self-hosted)
 
-- [x] Use ChatGPT On Wechat via wechaty
-- [x] Support OpenAI Accounts Pool
-- [x] Support use proxy to login
-- [x] Add conversation Support
-- [x] Add Dockerfile
-- [x] Publish to Docker.hub
-- [x] Add Railway deploy
-- [x] Auto Reload OpenAI Accounts Pool
-- [X] Add sendmessage retry for 429/503
+## Use with Railway
+> Railway offers $5 or 500 hours of runtime per month
+1. Click the [Railway](https://railway.app/template/dMLG70?referralCode=bIYugQ) button to go to the Railway deployment page
+2. Click the `Deploy Now` button to enter the Railway deployment page
+3. Fill in the repository name and `OPENAI_API_KEY` (need to link GitHub account)
+4. Click the `Deploy` button
+5. Click the `View Logs` button and wait for the deployment to complete
 
-## Use with docker in Linux(recommended)
+## Use with Fly.io
+> Please allocate 512MB memory for the application to meet the application requirements
+
+> fly.io offers free bills up to $5(Free Allowances 3 256MB are not included in the bill)
+1. Install [flyctl](https://fly.io/docs/getting-started/installing-flyctl/)
+   ```shell
+    # macOS
+    brew install flyctl
+    # Windows
+    scoop install flyctl
+    # Linux
+    curl https://fly.io/install.sh | sh
+   ```
+2. Clone the project and enter the project directory
+   ```shell
+   git clone https://github.com/fuergaosi233/wechat-chatgpt.git && cd wechat-chatgpt
+   ```
+3. Create a new app
+   ```shell
+   ➜ flyctl launch 
+    ? Would you like to copy its configuration to the new app? No
+    ? App Name (leave blank to use an auto-generated name): <YOUR APP NAME>
+    ? Select region: <YOUR CHOOSE REGION>
+    ? Would you like to setup a Postgresql database now? No
+    ? Would you like to deploy now? No
+   ```
+4. Configure the environment variables
+   ```shell
+   flyctl secrets set OPENAI_API_KEY="<YOUR OPENAI API KEY>" MODEL="<CHATGPT-MODEL>"
+   ```
+5. Deploy the app
+   ```shell
+   flyctl deploy
+   ```
+
+## Use with docker
 
 ```sh
-cp config.yaml.example config.yaml
-# Change Config.yaml
-# run docker command in Linux or WindowsPowerShell
-docker run -d --name wechat-chatgpt -v $(pwd)/config.yaml:/app/config.yaml holegots/wechat-chatgpt:latest
-# login with qrcode
+# pull image
+docker pull holegots/wechat-chatgpt
+# run container
+docker run -d --name wechat-chatgpt \
+    -e OPENAI_API_KEY=<YOUR OPENAI API KEY> \
+    -e MODEL="gpt-3.5-turbo" \
+    -e CHAT_PRIVATE_TRIGGER_KEYWORD="" \
+    -v $(pwd)/data:/app/data/wechat-assistant.memory-card.json \
+    holegots/wechat-chatgpt:latest
+# View the QR code to log in to wechat
+docker logs -f wechat-chatgpt
+```
+> How to get OPENAI API KEY? [Click here](https://platform.openai.com/account/api-keys)
+
+## Use with docker compose
+
+```sh
+# Copy the configuration file according to the template
+cp .env.example .env
+# Edit the configuration file
+vim .env
+# Start the container
+docker-compose up -d
+# View the QR code to log in to wechat
 docker logs -f wechat-chatgpt
 ```
 
-## Use with docker in Windows
+## Use with nodejs
+
+> You need NodeJS 18.0.0 version and above
 
 ```sh
-# Create and modify config.yaml in the current directory
-# run docker command in WindowsPowerShell
-docker run -d --name wechat-chatgpt -v $(pwd)/config.yaml:/app/config.yaml holegots/wechat-chatgpt:latest
-# In the Windows command line (cmd) environment, you may mount the current directory like this:
-docker run -d --name wechat-chatgpt -v %cd%/config.yaml:/app/config.yaml holegots/wechat-chatgpt:latest
-# login with qrcode
-docker logs -f wechat-chatgpt
-```
-
-## Upgrade docker image version
-
-```sh
-docker pull holegots/wechat-chatgpt:latest
-docker stop wechat-chatgpt
-docker rm wechat-chatgpt
-# run docker command in Linux or WindowsPowerShell
-docker run -d --name wechat-chatgpt -v $(pwd)/config.yaml:/app/config.yaml holegots/wechat-chatgpt:latest
-# In the Windows command line (cmd) environment, you may mount the current directory like this:
-docker run -d --name wechat-chatgpt -v %cd%/config.yaml:/app/config.yaml holegots/wechat-chatgpt:latest
-# login with qrcode
-docker logs -f wechat-chatgpt
-```
-
-## Install
-
-```sh
+# Clone the project
+git clone https://github.com/fuergaosi233/wechat-chatgpt.git && cd wechat-chatgpt
+# Install dependencies
 npm install
-```
-> NodeJS Version >= 18.0.0
-
-## Config
-
-### Copy config
-
-You need copy config file for setting up your project.
-
-```sh
-cp config.yaml.example config.yaml
-```
-
-### Get and config Openai account
-
-> If you don't have this OpenAI account and you live in China, you can get it [here](https://mirror.xyz/boxchen.eth/9O9CSqyKDj4BKUIil7NC1Sa1LJM-3hsPqaeW_QjfFBc).
-
-#### Use account and password
-
-You need get OpenAI account and password.
-Your config.yaml should be like this:
-
-```yaml
-chatGPTAccountPool:
-  - email: <your email>
-    password: <your password>
-# if you hope only some keywords can trigger chatgpt on private chat, you can set it like this:
-chatPrivateTiggerKeyword: ""
-```
-
-⚠️ Trigger keywords must appear in the first position of the received message.
-⚠️ Pls make sure your network can log in to OpenAI, and if you fail to login in try setting up a proxy or using SessionToken.
-
-**Setup proxy:**
-
-You can configure in `config.yaml`:
-
-```yaml
-openAIProxy: <Your Proxy>
-```
-
-### CAPTCHAS
-
-> The browser portions of this package use Puppeteer to automate as much as possible, including solving all CAPTCHAs. 🔥
-
-> Basic Cloudflare CAPTCHAs are handled by default, but if you want to automate the email + password Recaptchas, you'll need to sign up for one of these paid providers:
-
-> - [nopecha](https://nopecha.com/) - Uses AI to solve CAPTCHAS
->   - Faster and cheaper
->   - Set the `NOPECHA_KEY` env var to your nopecha API key
->   - [Demo video](https://user-images.githubusercontent.com/552829/208235991-de4890f2-e7ba-4b42-bf55-4fcd792d4b19.mp4) of nopecha solving the login Recaptcha (41 seconds)
-> - [2captcha](https://2captcha.com) - Uses real people to solve CAPTCHAS
->   - More well-known solution that's been around longer
->   - Set the `CAPTCHA_TOKEN` env var to your 2captcha API token
-
-So you should config `NOPECHA_KEY` or `CAPTCHA_TOKEN` in your Environment Variables.
-
-## Start Project
-
-```sh
+# Copy the configuration file according to the template
+cp .env.example .env
+# Edit the configuration file
+vim .env
+# Start project
 npm run dev
 ```
-## Usage with Railway
 
-[Railway](https://railway.app/) is a deployment platform where you can provision infrastructure, develop with that infrastructure locally, and then deploy to the cloud.This section describes how to quickly deploy a wechat-chatgpt project using Railway.
+> Please make sure your WeChat account can log in [WeChat on web](https://wx.qq.com/)
 
-Firstly, you'll need to sign up for a Railway account and sign in using GitHub verification.
+## 📝 Environment Variables
 
-Then click the one-click deployment button below to deploy.
+| name                         | default                | example                                        | description                                                                                                                                                                          |
+|------------------------------|------------------------|------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ~~API~~                      | https://api.openai.com |                                                | ~~API endpoint of ChatGPT~~                                                                                                                                                          |
+| OPENAI_API_KEY               | 123456789              | sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | [create new secret key](https://platform.openai.com/account/api-keys)                                                                                                                |
+| MODEL                        | gpt-3.5-turbo          |                                                | ID of the model to use. Currently, only gpt-3.5-turbo and gpt-3.5-turbo-0301 are supported.                                                                                          |
+| TEMPERATURE                  | 0.6                    |                                                | What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. |
+| CHAT_TRIGGER_RULE            |                        |                                                | Private chat triggering rules.                                                                                                                                                       |
+| DISABLE_GROUP_MESSAGE        | true                   |                                                | Prohibited to use ChatGPT in group chat.                                                                                                                                             |
+| CHAT_PRIVATE_TRIGGER_KEYWORD |                        |                                                | Keyword to trigger ChatGPT reply in WeChat private chat                                                                                                                              |
+| BLOCK_WORDS                  | "VPN"                  | "WORD1,WORD2,WORD3"                            | Chat blocker words, (works for both private and group chats, Use, Split)                                                                                                             |
+| CHATGPT_BLOCK_WORDS          | "VPN"                  | "WORD1,WORD2,WORD3"                            | The blocked words returned by ChatGPT(works for both private and group chats, Use, Split)                                                                                            |
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/BHJD6L?referralCode=FaJtD_)
+## 📝 Using Custom ChatGPT API
 
-After some validation is complete, you can begin the deployment.You will see the following interface:
+> https://github.com/fuergaosi233/openai-proxy
 
-![railway-deployment](docs/images/railway-deployment.png)
+```shell
+# Clone the project
+git clone https://github.com/fuergaosi233/openai-proxy
+# Install dependencies
+npm install && npm install -g wrangler && npm run build
+# Deploy to CloudFlare Workers
+npm run deploy
+# Custom domain (optional)
+Add `Route` to `wrangler.toml`
+routes = [
+    { pattern = "Your Custom Domain", custom_domain = true },
+]
+```
 
-Some environment variables need to be configured:
-
-- **CHAT_GPT_EMAIL** : Your OpenAI Account email.
-
-- **CHAT_GPT_PASSWORD** : Your OpenAI Account password.
-
-- **CHAT_GPT_RETRY_TIMES** : The number of times to retry when the OpenAI API returns 429 or 503.
-
-- **CHAT_PRIVATE_TRIGGER_KEYWORD** : If you hope only some keywords can trigger chatgpt on private chat, you can set it.
-
-Click the Deploy button and your service will start deploying shortly.The following interface appears to indicate that the deployment has begun:
-
-![railway-deploying](docs/images/railway-deploying.png)
-
-When the deployment is displayed successfully, click to view the logs and find the WeChat login link in Deploy Logs.
-
-![railway-deployed](docs/images/railway-deployed.png)
-
-Click to enter and use your prepared WeChat to scan the code to log in.
-
-Log in successfully and start sending and receiving messages(This process can take several minutes):
-
-![railway-success](docs/images/railway-succeed.png)
-
-Besides, in deployment, you may encounter the following issues:
-
-- **Error: ⚠️ No chatgpt item in pool** : This error means that you have not configured the OpenAI account information correctly. You can solve this problem from the following aspects:1. Check whether the token or openAI account and password are filled in correctly. 2. Redeploy Current Services.Note that the above should be modified on the Variables page in Railway Dashboard. 3. Please make sure that CloudFlare human authentication is present, if it is, Headless browser may not be able to simulate logging into OpenAI.
-- **After the deployment is complete, the QR code is not generated**.Try **refreshing** the page to see again if the Deploy Logs panel generated a link and QR code.
-- **The generated QR code cannot be scanned**.On the generated QR code, there is a link that can be clicked to scan the QR code.
-- **Message feedback is very slow**.Because Railway's servers are deployed overseas, there is an increase in message feedback latency, but it is still within the acceptance range. If you are time sensitive, you can use your own server deployment.
-
-If you are logging in for the first time, then you need to scan the qrcode.
+## ⌨️ Commands
+> Enter in the WeChat chat box
+```shell
+/cmd help # Show help
+/cmd prompt <PROMPT> # Set prompt
+/cmd clear # Clear all sessions since last boot
+```
 
 ## ✨ Contributor
 
@@ -197,10 +181,10 @@ If you are logging in for the first time, then you need to scan the qrcode.
   <img src="https://contrib.rocks/image?repo=fuergaosi233/wechat-chatgpt" />
 </a>
 
-
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/fuergaosi233/wechat-chatgpt/issues).
+Contributions, issues and feature requests are welcome!<br />Feel free to
+check [issues page](https://github.com/fuergaosi233/wechat-chatgpt/issues).
 
 ## Show your support
 
